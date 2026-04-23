@@ -1,0 +1,2 @@
+# Stock-Pymes.github.io
+SISTEMA DE CONTROL Y GESTIÓN DE INVENTARIO
