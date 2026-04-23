@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockPymes | Sistema de Inventario en Excel</title>
+    <link rel="icon" type="image/png" href="../Pictures/tags-price-sale-shopping-commerce-business-ecommerce-svgrepo-com.svg">
+    <!-- Bootstrap 5 + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Variables y reset */
+        :root {
+            --bg-light: #e8e8e8cf;
+            --text-light: #2d2a24;
+            --card-light: #64de0024;
+            --header-light: #d0d2d1; /*Este es para la barra top*/
+            --footer-light: #f8f5f0;
+            --accent-light: #1e6f3f;
+            --accent-hover: #145c34;
+            --border-light: #e9e2d8;
+            --bg-dark: #1f1b16;
+            --text-dark: #f0ede8;
+            --card-dark: #2c2620;
+            --header-dark: #231f1a;
+            --footer-dark: #1e1915;
+            --accent-dark: #6fbf4c;
+            --accent-hover-dark: #5aa63c;
+            --border-dark: #3e352c;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            padding-top: 72px; /* espacio para navbar fija */
+        }
+
+        body.dark-theme {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: var(--header-light);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            padding: 0.7rem 1rem;
+            backdrop-filter: blur(0px);
+        }
+        .dark-theme .navbar {
+            background-color: var(--header-dark);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: var(--accent-light);
+        }
+        .dark-theme .navbar-brand {
+            color: var(--accent-dark);
+        }
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-light);
+            margin: 0 0.2rem;
+            transition: 0.2s;
+        }
+        .dark-theme .nav-link {
+            color: var(--text-dark);
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-light);
+        }
+        .dark-theme .nav-link:hover, .dark-theme .nav-link.active {
+            color: var(--accent-dark);
+        }
+
+        /* Tema switch */
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 54px;
+            height: 28px;
+        }
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 28px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--accent-light);
+        }
+        .dark-theme input:checked + .slider {
+            background-color: var(--accent-dark);
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .icon-sun, .icon-moon {
+            position: absolute;
+            top: 6px;
+            font-size: 14px;
+            transition: .2s;
+        }
+        .icon-sun { left: 8px; color: #f1c40f; }
+        .icon-moon { right: 8px; color: #bdc3c7; }
+        input:checked ~ .icon-sun { opacity: 0; }
+        input:not(:checked) ~ .icon-moon { opacity: 0; }
+
+        /* Botones principales */
+        .btn-primary-custom {
+            background-color: var(--accent-light);
+            border: none;
+            padding: 12px 28px;
+            font-weight: 600;
+            border-radius: 40px;
+            color: white;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        .btn-primary-custom:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(30, 111, 63, 0.25);
+        }
+        .dark-theme .btn-primary-custom {
+            background-color: var(--accent-dark);
+        }
+        .dark-theme .btn-primary-custom:hover {
+            background-color: var(--accent-hover-dark);
+        }
+
+        /* Para cambiar el color de letras y bordes en el bootn 'Ver demostracion'*/
+        .dark-theme .btn-outline-secondary {
+            --bs-btn-color: #e7e9eb;
+            --bs-btn-border-color: #e7e9eb;
+        }
+
+        .btn-outline-secondary {
+            --bs-btn-color: #000000bd;
+            --bs-btn-border-color: #00000093;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(120deg, rgba(30,111,63,0.08) 0%, #64de004e 100%);
+            border-radius: 32px;
+            padding: 20px 35px;
+            margin-top: -1cm;
+        }
+        .dark-theme .hero {
+            background: linear-gradient(120deg, rgba(111,191,76,0.08) 0%, rgba(31,27,22,0.5) 100%);
+        }
+        .hero-title {
+            font-weight: 800;
+            font-size: 2.8rem;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+        .hero-sub {
+            font-size: 1.2rem;
+            color: #4a4a44;
+        }
+        .dark-theme .hero-sub {
+            color: #cdc9c2;
+        }
+
+        /* Cards genéricas */
+        .feature-card, .video-card, .pricing-card, .contact-card {
+            background-color: var(--card-light);
+            border-radius: 24px;
+            transition: all 0.25s ease;
+            border: 1px solid var(--border-light);
+            height: 100%;
+        }
+        .dark-theme .feature-card, .dark-theme .video-card,
+        .dark-theme .pricing-card, .dark-theme .contact-card {
+            background-color: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+        .video-card iframe {
+            border-radius: 20px 20px 0 0;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+        }
+        .video-body {
+            padding: 1.2rem;
+        }
+        .price-number {
+            font-size: 3.4rem;
+            font-weight: 800;
+            color: var(--accent-light);
+        }
+        .dark-theme .price-number {
+            color: var(--accent-dark);
+        }
+        .feature-list i {
+            color: var(--accent-light);
+            width: 26px;
+        }
+        .dark-theme .feature-list i {
+            color: var(--accent-dark);
+        }
+
+        /* Ajuste para texto muted en modo oscuro */
+        .dark-theme .text-muted {
+            color: #e7e9eb !important; /* gris claro visible en fondo oscuro */
+        }
+        .bg-white { /*Aqui le cambio el color de fondo y texto den Excel 2010 / 2016 / 2019 / 2021 */
+            --bs-bg-opacity: 1;
+            background-color: rgb(255 197 42) !important;
+            color: #1e1915;
+        }
+        .row {
+            margin-top: 0; /*calc(-2 * var(--bs-gutter-y)); */
+            margin-right: calc(-.5 * var(--bs-gutter-x));
+            margin-left: calc(-.5 * var(--bs-gutter-x));
+        }
+
+        /* Aqui se ajusta el espacio entre columnas */
+        /* .col-lg-6, .col-xl-5 {
+            margin-top: 52px;
+        }
+
+        .g-4, .gy-4 {
+            --bs-gutter-y: 5rem;
+        } */
+
+        /* Secciones */
+        .section {
+            padding: 70px 0;
+        }
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+        }
+        .section-sub {
+            font-size: 1.1rem;
+            opacity: 0.85;
+            margin-bottom: 1rem;
+        }
+
+        /* Formulario */
+        .form-control-custom {
+            box-sizing: border-box; /* ← Agrega esto */
+            background-color: rgba(255, 255, 255, 0.289);
+            border: 1px solid #64de0024;
+            padding: 12px 16px;
+            border-radius: 60px;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .dark-theme .form-control-custom {
+            background-color: rgba(255,255,255,0.05);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+        textarea.form-control-custom {
+            border-radius: 24px;
+            resize: vertical;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--footer-light);
+            padding: 30px 0 20px;
+            border-top: 1px solid var(--border-light);
+            margin-top: 0; /* antes era 40px */
+        }
+        .dark-theme .footer {
+            background-color: var(--footer-dark);
+            border-color: var(--border-dark);
+        }
+        .social-icon {
+            font-size: 1.6rem;
+            margin: 0 12px;
+            color: var(--text-light);
+            transition: 0.2s;
+        }
+        .dark-theme .social-icon {
+            color: var(--text-dark);
+        }
+        .social-icon:hover {
+            color: var(--accent-light);
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 66px;
+            }
+            .hero-title {
+                font-size: 2rem;
+            }
+            .section {
+                padding: 40px 0;
+            }
+            .price-number {
+                font-size: 2.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navegación -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <!-- <i class="fas fa-file-excel me-2"></i>StockPymes -->
+                <img src="../Pictures/tags-price-sale-shopping-commerce-business-ecommerce-svgrepo-com.svg" alt="icono" style="width: 24px; height: 24px; margin-right: 8px;">StockPymes
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center gap-2">
+                    <li class="nav-item"><a class="nav-link active" href="#">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#producto">Producto</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#videos">Videos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#precios">Precio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
+                    <li class="nav-item ms-2">
+                        <label class="theme-switch" id="themeToggleLabel">
+                            <input type="checkbox" id="darkModeToggle">
+                            <span class="slider"></span>
+                            <i class="fas fa-sun icon-sun"></i>
+                            <i class="fas fa-moon icon-moon"></i>
+                        </label>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HOME / Hero -->
+    <section id="home" class="section" style="padding-top: 20px;">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <div class="hero">
+                        <h1 class="hero-title">
+                            Sistema de inventario <br>
+                            <span style="color: var(--accent-light);">en Excel</span><br>
+                            para micronegocios
+                        </h1>
+                        <p class="hero-sub mt-3">
+                            Solución modular con dos versiones profesionales: <strong>Cajero</strong> y <strong>Administrador</strong>.
+                            Licencia perpetua, sin suscripciones, pago único.
+                        </p>
+                        <p class="hero-sub mt-2">
+                            <strong>📊 Módulo Cajero</strong><br>
+                            Operación de punto de venta con trazabilidad de transacciones, cierres diarios y control de efectivo.
+                        </p>
+                        <p class="hero-sub mt-2">
+                            <strong>📈 Paquete Completo (Cajero + Administrador)</strong><br>
+                            Incorpora gestión de inventario valuado, costo de mercancía vendida (CMV), reportes de utilidad bruta y cuadros de control gerencial.
+                        </p>
+                        <div class="mt-4">
+                            <a href="#precios" class="btn btn-primary-custom me-3"><i class="fas fa-cart-shopping me-2"></i>Comprar ahora</a>
+                            <a href="#videos" class="btn btn-outline-secondary btn-outline-custom" style="border-radius: 40px; padding: 12px 24px;">Ver demostración</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <!----https://cdn-icons-png.flaticon.com/512/1055/1055687.png-->
+                    <img src="../Pictures/logo.png" alt="Excel inventory" class="img-fluid" style="max-width: 90%; filter: drop-shadow(0 12px 18px rgba(0,0,0,0.1));">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Producto: descripción de las dos versiones -->
+    <section id="producto" class="section" style="background-color: rgba(0,0,0,0.02);">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title">Todo lo que tu negocio necesita</h2>
+                <p class="section-sub">Un solo paquete incluye ambas herramientas: Cajero + Administrador</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="feature-card p-4">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <i class="fas fa-cash-register fa-2x" style="color: var(--accent-light);"></i>
+                            <h3 class="h3 fw-bold mb-0">Versión Cajero</h3>
+                        </div>
+                        <p>Interfaz simple para registrar ventas, imprimir tickets, control de caja diario y consulta rápida de productos.</p>
+                        <ul class="list-unstyled feature-list mt-3">
+                            <li class="mb-2"><i class="fas fa-check-circle me-2"></i> Ventas rápidas con atajos</li>
+                            <li class="mb-2"><i class="fas fa-check-circle me-2"></i> Catálogo de productos por categoría</li>
+                            <li class="mb-2"><i class="fas fa-check-circle me-2"></i> Cierre de caja automático</li>
+                            <li class="mb-2"><i class="fas fa-check-circle me-2"></i> Búsqueda de productos por código</li>
+                            <li class="mb-2"><i class="fas fa-check-circle me-2"></i> Historial de ventas diarias</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-card p-4">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <i class="fas fa-chart-line fa-2x" style="color: var(--accent-light);"></i>
+                            <h3 class="h3 fw-bold mb-0">Versión Administrador</h3>
+                        </div>
+                        <p>Gestión total de inventario, proveedores, reportes de ganancias y control de múltiples sucursales.</p>
+                        <ul class="list-unstyled feature-list mt-3">
+                            <li class="mb-2"><i class="fas fa-check-circle me-2"></i> Control de stock y alertas</li>
+                            <li class="mb-2"><i class="fas fa-check-circle me-2"></i> Catálogo de productos por categoría</li>
+                            <li class="mb-2"><i class="fas fa-check-circle me-2"></i> Dashboard con KPI's</li>
+                            <li class="mb-2"><i class="fas fa-check-circle me-2"></i> Importación/exportación Excel</li>
+                            <li class="mb-2"><i class="fas fa-check-circle me-2"></i> Gestión de perdidas/beneficios por mes, semestre, trimestre y anual</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-5">
+                <div class="bg-white p-3 rounded-4 d-inline-flex shadow-sm" style="background-color: var(--card-light);">
+                    <span class="fw-bold me-2">✔ Compatible con Excel 2010 / 2016 / 2019 / 2021</span> <i class="fas fa-sync-alt"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección VIDEOS: dos cuadros con iframe, título y resumen de 10 palabras -->
+    <section id="videos" class="section">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title">Conoce cómo funciona</h2>
+                <p class="section-sub">Videos demostrativos de ambas versiones</p>
+            </div>
+            <div class="row g-4 justify-content-center">
+                <!-- Video 1: Versión Cajero -->
+                <div class="col-lg-6">
+                    <div class="video-card">
+                        <iframe src="https://www.youtube.com/embed/1R4mCJuHSPk?si=Qr7MydN7zPwOzY04" title="Demo versión Cajero" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        <div class="video-body">
+                            <h3 class="h4 fw-bold">📋 Demo Cajero – Ventas rápidas y cierre</h3>
+                            <p class="mb-0" style="font-size: 0.95rem;">Operación ágil para cajeros: cobros, tickets, arqueo diario y gestión sencilla.</p>
+                            <small class="text-muted mt-2 d-block">| En resumen: Interfaz limpia, facturación fácil, control de efectivo</small>
+                        </div>
+                    </div>
+                </div>
+                <!-- Video 2: Versión Administrador -->
+                <div class="col-lg-6">
+                    <div class="video-card">
+                        <iframe src="https://www.youtube.com/embed/CJ6Yq7Q0yBo?si=SV7c6VrBWtyR1UAz" title="Demo versión Administrador" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        <div class="video-body">
+                            <h3 class="h4 fw-bold">📊 Dashboard Administrador – Inventario completo</h3>
+                            <p class="mb-0" style="font-size: 0.95rem;">Gestión de stock, reportes detallados, proveedores y analítica de ventas.</p>
+                            <small class="text-muted mt-2 d-block">| En resumen: Control centralizado, alertas de stock, informes ejecutivos y decisiones</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <p class="small opacity-75">* Los videos muestran funcionalidades reales del sistema incluido en el paquete.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Precio único: 56 USD (ambas versiones) -->
+    <section id="precios" class="section" style="background: rgba(0,0,0,0.02);">
+        <div class="container">
+            <div class="row justify-content-center">
+                <!-- Columna izquierda: Paquete Completo -->
+                <div class="col-lg-6 col-xl-5 mb-4">
+                    <div class="pricing-card text-center p-5 shadow-lg h-100">
+                        <div class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill mb-3">🔥 Oferta especial</div>
+                        <h2 class="fw-bold">Paquete Completo</h2>
+                        <p class="mb-3">Versión Cajero + Versión Administrador · Licencia perpetua · Sin mensualidades</p>
+                        <div class="price-number">$60 <span style="font-size: 1.2rem; font-weight: normal;">USD</span></div>
+                        <p class="text-muted mb-4">Pago único · Incluye actualizaciones 1 año + 6 meses · Soporte por email y mensajería</p>
+                        <ul class="list-unstyled text-start d-inline-block mb-4" style="max-width: 280px;">
+                            <li><i class="fas fa-check-circle me-2" style="color: var(--accent-light);"></i> Archivos Excel listos para usar</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: var(--accent-light);"></i> Guía de instalación y manual</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: var(--accent-light);"></i> Acceso a grupo de soporte</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: var(--accent-light);"></i> 2 horas de capacitación virtual</li>
+                        </ul>
+                        <div>
+                            <button class="btn btn-primary-custom btn-lg w-100" id="buyButton"><i class="fas fa-shopping-cart me-2"></i> Adquirir ahora - $60 USD</button>
+                            <p class="mt-3 small">✅ Entrega inmediata por Correo/Whatsapp/Messenger · Aceptamos PayPal y transferencias online</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna derecha: Solo versión Cajero -->
+                <div class="col-lg-6 col-xl-5 mb-4">
+                    <div class="pricing-card text-center p-5 shadow-lg h-100">
+                        <div class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill mb-3">🎯 Versión Individual</div>
+                        <h2 class="fw-bold">Solo Cajero</h2>
+                        <p class="mb-3">Versión exclusiva para punto de venta · Ideal para micronegocio que solo necesitan Caja</p>
+                        <div class="price-number">$35 <span style="font-size: 1.2rem; font-weight: normal;">USD</span></div>
+                        <p class="text-muted mb-4">Pago único · Incluye actualizaciones 1 año · Soporte por email y mensajería</p>
+                        <ul class="list-unstyled text-start d-inline-block mb-4" style="max-width: 280px;">
+                            <li><i class="fas fa-check-circle me-2" style="color: var(--accent-light);"></i> Ventas rápidas con ticket</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: var(--accent-light);"></i> Cierre de caja diario</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: var(--accent-light);"></i> Búsqueda de productos</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: var(--accent-light);"></i> Historial de ventas y facturas</li>
+                        </ul>
+                        <div>
+                            <button class="btn btn-primary-custom btn-lg w-100" id="buyButtonCajero"><i class="fas fa-shopping-cart me-2"></i> Adquirir ahora - $35 USD</button>
+                            <p class="mt-3 small">✅ Entrega inmediata por Correo/Whatsapp/Messenger · Aceptamos PayPal y transferencias online</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacto -->
+    <section id="contacto" class="section">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title">¿Tienes preguntas?</h2>
+                <p class="section-sub">Escríbenos y te ayudamos a elegir o resolver dudas técnicas</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-5">
+                    <div class="contact-card p-4 h-100">
+                        <h4 class="fw-bold mb-3"><i class="fas fa-phone-alt me-2"></i>Contáctanos</h4>
+                        <ul class="list-unstyled">
+                            <li class="mb-3"><i class="fas fa-envelope me-3" style="width: 24px;"></i> rosemarymarquezlagosmosque@gmail.com</li>
+                            <li class="mb-3"><i class="fab fa-whatsapp me-3" style="width: 24px;"></i> +58 (0424) 420-9410</li>
+                            <li class="mb-3"><i class="fas fa-clock me-3"></i> Lunes a Viernes 10am - 6pm (GMT-5)</li>
+                            <li class="mb-3"><i class="fas fa-map-marker-alt me-3"></i> Online · Soporte remoto</li>
+                        </ul>
+                        <div class="mt-4">
+                            <p class="mb-1"><strong>Espere vuestra respuesta en 24h</strong></p>
+                            <div class="d-flex gap-2 mt-2">
+                                <i class="fab fa-whatsapp fa-lg"></i>
+                                <i class="fab fa-instagram fa-lg"></i>
+                                <i class="fab fa-facebook fa-lg"></i>
+                                <i class="fab fa-facebook-messenger fa-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="contact-card p-4">
+                        <form id="contactForm" action="#" method="post">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control-custom" placeholder="Nombre completo" required>
+                                </div>
+                                <div class="col-sm-6">
+                                    <input type="email" class="form-control-custom" placeholder="Correo electrónico" required>
+                                </div>
+                            </div>
+                            <input type="text" class="form-control-custom" placeholder="Teléfono (opcional)">
+                            <textarea rows="3" class="form-control-custom" placeholder="Cuéntanos tu consulta..."></textarea>
+                            <button type="submit" class="btn btn-primary-custom w-100 mt-2">Enviar mensaje</button>
+                        </form>
+                        <p class="small text-muted mt-3 text-center">* También puedes escribirnos directo a rosemarymarquezlagosmosque@gmail.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="text-center">
+                <div class="mb-2">
+                    <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+                </div>
+                <p class="mb-0">© 2026 StockPymes — Sistema de Inventario Excel</p>
+                <p class="small opacity-75 mt-1 mb-0">Excel es marca registrada de Microsoft Corporation. Este producto es independiente.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function() {
+            // 1. Modo oscuro / claro
+            const toggle = document.getElementById('darkModeToggle');
+            const body = document.body;
+
+            function setTheme(theme) {
+                if (theme === 'dark') {
+                    body.classList.add('dark-theme');
+                    if (toggle) toggle.checked = true;
+                } else {
+                    body.classList.remove('dark-theme');
+                    if (toggle) toggle.checked = false;
+                }
+            }
+
+            // Cargar preferencia guardada o sistema
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                setTheme('dark');
+            } else if (savedTheme === 'light') {
+                setTheme('light');
+            } else {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                setTheme(prefersDark ? 'dark' : 'light');
+            }
+
+            if (toggle) {
+                toggle.addEventListener('change', function(e) {
+                    if (this.checked) {
+                        body.classList.add('dark-theme');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        body.classList.remove('dark-theme');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+
+            // 2. Smooth scroll y activar clase en nav
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            const sections = document.querySelectorAll('section');
+
+            function updateActiveNav() {
+                let current = '';
+                const scrollPos = window.scrollY + 120;
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionBottom = sectionTop + section.offsetHeight;
+                    if (scrollPos >= sectionTop && scrollPos < sectionBottom) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    const href = link.getAttribute('href');
+                    if (href === `#${current}`) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', updateActiveNav);
+            window.addEventListener('load', updateActiveNav);
+
+            // click suave con offset personalizado
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href');
+                    if (targetId === "#" || targetId === "") return;
+                    const targetEl = document.querySelector(targetId);
+                    if (targetEl) {
+                        e.preventDefault();
+
+                        // 🔧 Ajusta este valor: es la distancia desde el top (evita que el navbar tape el título)
+                        const offset = 30; // píxeles de margen superior
+
+                        const elementPosition = targetEl.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.scrollY - offset;
+
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+
+                        history.pushState(null, null, targetId);
+                        updateActiveNav();
+                    }
+                });
+            });
+
+            // 3. Botón comprar alerta demostrativa
+            const buyBtn = document.getElementById('buyButton');
+            if (buyBtn) {
+                buyBtn.addEventListener('click', function() {
+                    alert("✅ ¡Gracias por tu interés! Paquete Completo (Cajero + Administrador): $60 USD.\n\nPara concretar la compra escríbenos a rosemarymarquezlagosmosque@gmail.com y te enviaremos el link de pago seguro. 📩");
+                });
+            }
+
+            // Botón para versión solo cajero
+            const buyBtnCajero = document.getElementById('buyButtonCajero');
+            if (buyBtnCajero) {
+                buyBtnCajero.addEventListener('click', function() {
+                    alert("✅ Versión Solo Cajero: $35 USD.\n\nPara concretar la compra escríbenos a rosemarymarquezlagosmosque@gmail.com y te enviaremos el link de pago seguro. 📩");
+                });
+            }
+
+            // 4. Simulación de envío de formulario (demo)
+            const contactForm = document.getElementById('contactForm');
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    //alert("📬 Mensaje enviado. Te contactaremos en las próximas horas. ¡Gracias por confiar en StockPymes!");
+                    alert("📬 Esta sección aún no está disponible.");
+                    contactForm.reset();
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
