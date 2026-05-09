@@ -1,0 +1,2494 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockPymes | Sistema de Inventario en Excel</title>
+    <link rel="icon" type="image/png" href="../Pictures/tags-price-sale-shopping-commerce-business-ecommerce-svgrepo-com.svg">
+    <!-- Bootstrap 5 + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- JsBarcode CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        /* Variables y reset (sin cambios) */
+        :root {
+            --bg-light: #e8e8e8cf;
+            --text-light: #2d2a24;
+            --card-light: #64de0024;
+            --header-light: #d0d2d1;
+            --footer-light: #f8f5f0;
+            --accent-light: #1e6f3f;
+            --accent-hover: #145c34;
+            --border-light: #e9e2d8;
+            --bg-dark: #1f1b16;
+            --text-dark: #f0ede8;
+            --card-dark: #2c2620;
+            --header-dark: #231f1a;
+            --footer-dark: #1e1915;
+            --accent-dark: #6fbf4c;
+            --accent-hover-dark: #5aa63c;
+            --border-dark: #3e352c;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            padding-top: 72px;
+        }
+
+        body.dark-theme {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        /* Placeholder */
+        .dark-theme .form-control-custom::placeholder {
+            color: #adb5bd;
+            opacity: 1;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: var(--header-light);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            padding: 0.7rem 1rem;
+            backdrop-filter: blur(0px);
+        }
+        .dark-theme .navbar {
+            background-color: var(--header-dark);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: var(--accent-light);
+        }
+        .dark-theme .navbar-brand {
+            color: var(--accent-dark);
+        }
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-light);
+            margin: 0 0.2rem;
+            transition: 0.2s;
+        }
+        .dark-theme .nav-link {
+            color: var(--text-dark);
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-light);
+        }
+        .dark-theme .nav-link:hover, .dark-theme .nav-link.active {
+            color: var(--accent-dark);
+        }
+
+        /* Tema switch */
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 54px;
+            height: 28px;
+        }
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 28px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px; width: 22px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--accent-light);
+        }
+        .dark-theme input:checked + .slider {
+            background-color: var(--accent-dark);
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .icon-sun, .icon-moon {
+            position: absolute;
+            top: 6px;
+            font-size: 14px;
+            transition: .2s;
+        }
+        .icon-sun { left: 8px; color: #f1c40f; }
+        .icon-moon { right: 8px; color: #bdc3c7; }
+        input:checked ~ .icon-sun { opacity: 0; }
+        input:not(:checked) ~ .icon-moon { opacity: 0; }
+
+        /* Botones principales */
+        .btn-primary-custom {
+            background-color: var(--accent-light);
+            border: none;
+            padding: 12px 28px;
+            font-weight: 600;
+            border-radius: 8px;
+            color: white;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        .btn-primary-custom:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(30, 111, 63, 0.25);
+        }
+        .dark-theme .btn-primary-custom {
+            background-color: var(--accent-dark);
+        }
+        .dark-theme .btn-primary-custom:hover {
+            background-color: var(--accent-hover-dark);
+        }
+
+        .dark-theme .btn-outline-secondary {
+            --bs-btn-color: #e7e9eb;
+            --bs-btn-border-color: #e7e9eb;
+        }
+        .btn-outline-secondary {
+            --bs-btn-color: #000000bd;
+            --bs-btn-border-color: #00000093;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(120deg, rgba(30,111,63,0.08) 0%, #64de004e 100%);
+            border-radius: 32px;
+            padding: 20px 35px;
+            margin-top: -1cm;
+        }
+        .dark-theme .hero {
+            background: linear-gradient(120deg, rgba(111,191,76,0.08) 0%, rgba(31,27,22,0.5) 100%);
+        }
+        .hero-title {
+            font-weight: 800;
+            font-size: 2.8rem;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+        .hero-sub {
+            font-size: 1.2rem;
+            color: #4a4a44;
+        }
+        .dark-theme .hero-sub {
+            color: #cdc9c2;
+        }
+
+        /* Cards */
+        .feature-card, .video-card, .pricing-card, .contact-card {
+            background-color: var(--card-light);
+            border-radius: 24px;
+            transition: all 0.25s ease;
+            border: 1px solid var(--border-light);
+            height: 100%;
+        }
+        .dark-theme .feature-card, .dark-theme .video-card,
+        .dark-theme .pricing-card, .dark-theme .contact-card {
+            background-color: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+        .video-card iframe {
+            border-radius: 20px 20px 0 0;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+        }
+        .video-body { padding: 1.2rem; }
+        .price-number {
+            font-size: 3.4rem;
+            font-weight: 800;
+            color: var(--accent-light);
+        }
+        .dark-theme .price-number {
+            color: var(--accent-dark);
+        }
+        .feature-list i { color: var(--accent-light); width: 26px; }
+        .dark-theme .feature-list i { color: var(--accent-dark); }
+
+        .dark-theme .text-muted {
+            color: #e7e9eb !important;
+        }
+        .bg-white {
+            --bs-bg-opacity: 1;
+            background-color: rgb(255 197 42) !important;
+            color: #1e1915;
+        }
+        .row {
+            margin-top: 0;
+            margin-right: calc(-.5 * var(--bs-gutter-x));
+            margin-left: calc(-.5 * var(--bs-gutter-x));
+        }
+
+        .section { padding: 70px 0; }
+        .section-title { font-size: 2.2rem; font-weight: 700; margin-bottom: 2rem; }
+        .section-sub { font-size: 1.1rem; opacity: 0.85; margin-bottom: 1rem; }
+
+        .form-control-custom {
+            box-sizing: border-box;
+            background-color: rgba(255, 255, 255, 0.289);
+            border: 1px solid #64de0024;
+            padding: 12px 16px;
+            border-radius: 60px;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .dark-theme .form-control-custom {
+            background-color: rgba(255,255,255,0.05);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+        textarea.form-control-custom {
+            border-radius: 24px;
+            resize: vertical;
+        }
+
+        .footer {
+            background-color: var(--footer-light);
+            padding: 30px 0 20px;
+            border-top: 1px solid var(--border-light);
+            margin-top: 0;
+        }
+        .dark-theme .footer {
+            background-color: var(--footer-dark);
+            border-color: var(--border-dark);
+        }
+        .social-icon {
+            font-size: 1.6rem;
+            margin: 0 12px;
+            color: var(--text-light);
+            transition: 0.2s;
+        }
+        .dark-theme .social-icon { color: var(--text-dark); }
+        .social-icon:hover {
+            color: var(--accent-light);
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 768px) {
+            body { padding-top: 66px; }
+            .hero-title { font-size: 2rem; }
+            .section { padding: 40px 0; }
+            .price-number { font-size: 2.6rem; }
+        }
+
+        /* ===== Estilos nuevos/mejorados ===== */
+        .search-container {
+            max-width: 500px;
+            margin: 0 auto 2rem auto;
+        }
+        .search-input {
+            border-radius: 50px;
+            padding-left: 20px;
+        }
+
+        .product-card {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-card .card-body-content {
+            flex: 1 1 auto;
+        }
+
+        /* Contenedor del código de barras con botón superpuesto */
+        .barcode-wrapper {
+            margin-left: -0.5rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .barcode-inner {
+            position: relative;
+            display: inline-block;
+        }
+        .barcode-img {
+            width: 220px !important;
+            height: 80px !important;
+            display: block;
+        }
+        .copy-btn-overlay {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            transform: none;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            z-index: 2;
+            color: #333;
+            line-height: 1;
+            white-space: nowrap;
+        }
+        .dark-theme .copy-btn-overlay {
+            background: rgba(0,0,0,0.6);
+            border-color: #555;
+            color: #eee;
+        }
+        .copy-btn-overlay:hover {
+            background: rgba(255,255,255,1);
+            border-color: #999;
+        }
+        .dark-theme .copy-btn-overlay:hover {
+            background: rgba(0,0,0,0.8);
+            border-color: #aaa;
+        }
+        .barcode-digits {
+            font-family: monospace;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            display: block;
+            text-align: center;
+            margin-top: 4px;
+        }
+        .product-img {
+            width: 100%;
+            height: 160px;
+            object-fit: contain;
+            background: rgb(216, 233, 202);
+            border-radius: 12px;
+        }
+        .dark-theme .product-img {
+            background: #2c2620;
+        }
+        .btn-descargar-center {
+            display: block;
+            margin: 1rem auto 0 auto;
+            width: fit-content;
+        }
+
+        /* ===== NUEVOS ESTILOS PARA CATEGORÍAS ===== */
+        .category-section {
+            margin: 2rem 0 2.5rem;
+        }
+        .category-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .category-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .category-btn {
+            border-radius: 30px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid var(--border-light);
+            background: transparent;
+            color: var(--text-light);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .dark-theme .category-btn {
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+        .category-btn:hover, .category-btn.active {
+            background-color: var(--accent-light);
+            color: white;
+            border-color: var(--accent-light);
+        }
+        .dark-theme .category-btn:hover, .dark-theme .category-btn.active {
+            background-color: var(--accent-dark);
+            color: white;
+            border-color: var(--accent-dark);
+        }
+        .category-icon {
+            margin-right: 0.3rem;
+        }
+
+        /* Icono junto al nombre del producto */
+        .product-category-icon {
+            font-size: 1rem;
+            color: var(--accent-light);
+            margin-right: 0.3rem;
+        }
+        .dark-theme .product-category-icon {
+            color: var(--accent-dark);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navegación (idéntica) -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="../Pictures/tags-price-sale-shopping-commerce-business-ecommerce-svgrepo-com.svg" alt="icono" style="width: 24px; height: 24px; margin-right: 8px;">StockPymes
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center gap-2">
+                    <li class="nav-item"><a class="nav-link active" href="/html/index.html#">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/html/index.html#producto">Producto</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/html/Catalogo.html">Catálogo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/html/index.html#videos">Videos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/html/index.html#precios">Precio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/html/index.html#contacto">Contacto</a></li>
+                    <li class="nav-item ms-2">
+                        <label class="theme-switch" id="themeToggleLabel">
+                            <input type="checkbox" id="darkModeToggle">
+                            <span class="slider"></span>
+                            <i class="fas fa-sun icon-sun"></i>
+                            <i class="fas fa-moon icon-moon"></i>
+                        </label>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Catálogo -->
+    <section id="catalogo" class="section">
+        <div class="container">
+            <h2 class="section-title text-center">Catálogo de Productos</h2>
+            <p class="section-sub text-center">Explora nuestras soluciones diseñadas para optimizar tu inventario.</p>
+
+            <div class="search-container">
+                <input type="text" id="searchInput" class="form-control form-control-custom search-input" placeholder="Buscar producto por nombre...">
+            </div>
+
+            <!-- Sección de categorías agregada -->
+            <div class="category-section">
+                <div class="category-title">
+                    <i class="fas fa-th-large"></i> Listar por Categorías
+                </div>
+                <div class="category-list" id="categoryList">
+                    <button class="category-btn active" data-category="todas"><i class="fas fa-list category-icon"></i> Todas</button>
+                    <button class="category-btn" data-category="alimentos"><i class="fas fa-utensils category-icon"></i> Alimentos</button>
+                    <button class="category-btn" data-category="aceites-vinagres-aderezos"><i class="fas fa-bottle-droplet category-icon"></i> Aceites, Vinagres y Aderezos</button>
+                    <button class="category-btn" data-category="frutas-verduras"><i class="fas fa-apple-alt category-icon"></i> Frutas y Verduras</button>
+                    <button class="category-btn" data-category="carniceria"><i class="fas fa-drumstick-bite category-icon"></i> Carnicería y Pescadería</button>
+                    <button class="category-btn" data-category="panaderia"><i class="fas fa-bread-slice category-icon"></i> Panadería, Pastelería y Charcutería</button>
+                    <button class="category-btn" data-category="farmacia"><i class="fas fa-prescription-bottle-alt category-icon"></i> Farmacia</button>
+                    <button class="category-btn" data-category="limpieza"><i class="fas fa-broom category-icon"></i> Limpieza y Hogar</button>
+                    <button class="category-btn" data-category="licoreria"><i class="fas fa-wine-bottle category-icon"></i> Licoreria</button>
+                    <button class="category-btn" data-category="bebidas"><i class="fas fa-coffee category-icon"></i> Bebidas</button>
+                    <button class="category-btn" data-category="cuidado-personal"><i class="fas fa-hand-sparkles category-icon"></i> Cuidado Personal</button>
+                    <button class="category-btn" data-category="recargas"><i class="fas fa-mobile-alt category-icon"></i> Recargas de Saldo Celular</button>
+                    <button class="category-btn" data-category="congelados"><i class="fas fa-snowflake category-icon"></i> Congelados y Refrigerados</button>
+                    <button class="category-btn" data-category="helados"><i class="fas fa-ice-cream category-icon"></i> Helados y Postres</button>
+                    <button class="category-btn" data-category="bebes"><i class="fas fa-baby category-icon"></i> Bebes</button>
+                    <button class="category-btn" data-category="electronicos"><i class="fas fa-tv category-icon"></i> Electrónicos</button>
+                    <button class="category-btn" data-category="mascotas"><i class="fas fa-paw category-icon"></i> Mascotas</button>
+                    <button class="category-btn" data-category="importado"><i class="fas fa-globe-americas category-icon"></i> Importado</button>
+                    <button class="category-btn" data-category="Hogar"><i class="fas fa-house category-icon"></i> Hogar</button>
+                    <button class="category-btn" data-category="ferretria"><i class="fas fa-screwdriver-wrench category-icon"></i> Ferretería</button>
+                    <button class="category-btn" data-category="saludables"><i class="fas fa-seedling category-icon"></i> Saludable</button>
+                    <button class="category-btn" data-category="papeleria"><i class="fas fa-paste category-icon"></i> Papelería</button>
+                    <button class="category-btn" data-category="JF"><i class="fas fa-face-party category-icon"></i> Juguetería y Fiesta</button>
+                    <button class="category-btn" data-category="automotriz"><i class="fas fa-car category-icon"></i> Automotriz</button>
+                    <button class="category-btn" data-category="deportes"><i class="fas fa-dumbbell category-icon"></i> Deportes</button>
+                    <button class="category-btn" data-category="ropa"><i class="fas fa-tshirt category-icon"></i> Ropa y accesorios</button>
+                    <button class="category-btn" data-category="Delicatessen"><i class="fas fa-arrow-up-from-water-pump category-icon"></i> Delicatessen</button>
+                    <button class="category-btn" data-category="12"><i class="fas fa-calendar-alt category-icon"></i> Diciembre</button>
+                    <button class="category-btn" data-category="italia"><i class="fas fa-store-alt category-icon"></i> Ristorante Italiano</button>
+                </div>
+            </div>
+
+            <!--------------------------------------------------
+              ----- Categoria 1 Aceites, Vinagres y Aderezos ---
+              -------------------------------------------------->
+            <div class="row g-5" id="productContainer">
+                <!-- Producto 1 - Mayonesa Mavesa 445g (categoría: aceites-vinagres-aderezos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Mayonesa Mavesa 445g" data-categoria="aceites-vinagres-aderezos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ACEITES-VINAGRES-ADEREZOS/719503030123.jpeg" alt="Mayonesa Mavesa 445g" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2216%22%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-bottle-droplet product-category-icon"></i>Mayonesa Mavesa 445g</h5>
+                            <p>Mayonesa Mavesa 445g</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="719503030123"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 2 - Aceite Mazeite de 1L (categoría: aceites-vinagres-aderezos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Aceite Mazeite de 1L" data-categoria="aceites-vinagres-aderezos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ACEITES-VINAGRES-ADEREZOS/719503030133.jpg" alt="Aceite Mazeite de 1L" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２２middle%２２ font-size=%２２16%２２%３ESin imagen%３C/text%３E%３C/svg%３E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-bottle-droplet product-category-icon"></i>Aceite Mazeite de 1L</h5>
+                            <p>Aceite Mazeite de 1L</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="719503030133"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 3 - Vinagre Mavesa 1L (categoría: aceites-vinagres-aderezos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Vinagre Mavesa 1L" data-categoria="aceites-vinagres-aderezos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ACEITES-VINAGRES-ADEREZOS/719503061035.jpeg" alt="Vinagre Mavesa 1L" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２２middle%２２ font-size=%２２16%２２%３ESin imagen%３C/text%３E%３C/svg%３E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-bottle-droplet product-category-icon"></i>Vinagre Mavesa 1L</h5>
+                            <p>Vinagre Mavesa 1L</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="719503061035"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 4 - Aceite V Kaldini 500ml (categoría: aceites-vinagres-aderezos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Aceite V Kaldini 500ml" data-categoria="aceites-vinagres-aderezos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ACEITES-VINAGRES-ADEREZOS/810014610648.jpeg" alt="Aceite V Kaldini 500ml" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%３ESin imagen%３C/text%３E%３C/svg%３E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-bottle-droplet product-category-icon"></i>Aceite V Kaldini 500ml</h5>
+                            <p>Aceite de Coco Orgánico Virgen Kaldini 500ml</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="810014610648"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 5 - Oliva Al-Amir 500ml (categoría: aceites-vinagres-aderezos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Oliva Al-Amir 500ml" data-categoria="aceites-vinagres-aderezos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ACEITES-VINAGRES-ADEREZOS/5283001301986.jpeg" alt="Oliva Al-Amir 500ml" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%３ESin imagen%３C/text%３E%３C/svg%３E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-bottle-droplet product-category-icon"></i>Oliva Al-Amir 500ml</h5>
+                            <p>Aceite de Oliva Extra Premium Al Amir 500ml</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="810014610648"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!----------------------------------------------------
+                  ----------- Categoría 2 ALIMENTOS_INFANTILES -------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 3 AMBIENTADORES-INSECTICIDAS -
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 4 ARROZ-QUINOA ---------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 5 ATUN-SARDINAS-ANCHOAS ------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 6 AZUCAR-MIEL-REPOSTERIA -----
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 7 BEBIDAS_EN_POLVO-AGUA-SODA -
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 8 BOLSAS_Y_DESECHABLES -------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 9 BOMBILLOS ------------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 10 CAFE-TE -------------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 11 CARBON --------------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 12 CERDO ---------------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 13 CEREALES-AVENAS -----------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 14 LICORERIA -----------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 15 CHOCOLATES-CHUCHERIA ------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 16 CONDIMENTOS_Y_SAZONADORES -
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 17 CUBIERTOS -----------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 18 CUBITOS-CALDOS-SOPAS ------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 19 CUIDADO_DE_CABELLO --------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 20 CUIDADO_INTIMO ------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 21 CUIDADO_PERSONAL_BEBES ----
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 22 CUIDADO-HIGIENE_CORPORAL --
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 23 DESINFECTANTES-MULTIUSOS --
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 24 EMBUTIDOS_PRIMIUM ---------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 25 ENDIABLADOS-UNTABLES ------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 26 DELICATESSEN --------------
+                  ---------------------------------------------------->
+                <!-- Producto 1 - Carpaccio PzEP-AH 120G (categoría: Delicatessen) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Carpaccio PzEP-AH 120G" data-categoria="Delicatessen">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/DELICATESSEN/770304806250.jpg" alt="Carpaccio PzEP-AH 120G" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-arrow-up-from-water-pump product-category-icon"></i>Carpaccio PzEP-AH 120G</h5>
+                            <p>Carpaccio de Pez Espada Ahumado King Fish 120gr</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770304806250"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 2 - Aceituna RA Pafia 350g (categoría: Delicatessen) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Aceituna RA Pafia 350g" data-categoria="Delicatessen">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/DELICATESSEN/771702028338.jpg" alt="Aceituna RA Pafia 350g" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-arrow-up-from-water-pump product-category-icon"></i>Aceituna RA Pafia 350g</h5>
+                            <p>Aceitunas Rellenas de Anchoas Pafia 350g</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771702028338"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 3 - Carpaccio PezAguja120g (categoría: Delicatessen) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Carpaccio PezAguja120g" data-categoria="Delicatessen">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/DELICATESSEN/770117472808.jpg" alt="Carpaccio PezAguja120g" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-arrow-up-from-water-pump product-category-icon"></i>Carpaccio PezAguja120g</h5>
+                            <p>Carpaccio de Pez Aguja Bottega Di Mare 120g</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770117472808"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 4 - Carpaccio de Mero 120G (categoría: Delicatessen) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Carpaccio de Mero 120G" data-categoria="Delicatessen">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/DELICATESSEN/770167796813.jpg" alt="Carpaccio de Mero 120G" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%2２ x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-arrow-up-from-water-pump product-category-icon"></i>Carpaccio de Mero 120G</h5>
+                            <p>Carpaccio de Mero Bottega Di Mare 120gr</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770167796813"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 5 - Aceituna QA Pafia 350G (categoría: Delicatessen) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Aceituna QA Pafia 350G" data-categoria="Delicatessen">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/DELICATESSEN/770424702515.jpg" alt="Aceituna QA Pafia 350G" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%2２ x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-arrow-up-from-water-pump product-category-icon"></i>Aceituna QA Pafia 350G</h5>
+                            <p>Aceitunas Rellenas De Queso Azul Pafia 350gr</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770424702515"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 6 - Carpaccio Pz P-AH 120G (categoría: Delicatessen) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Carpaccio Pz P-AH 120G" data-categoria="Delicatessen">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/DELICATESSEN/770618197164.jpg" alt="Carpaccio Pz P-AH 120G" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%2２ x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-arrow-up-from-water-pump product-category-icon"></i>Carpaccio Pz P-AH 120G</h5>
+                            <p>Carpaccio de Pez Peto Ahumado King Fish 120gr</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770618197164"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 7 - Carpaccio Langost 120G (categoría: Delicatessen) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Carpaccio Langost 120G" data-categoria="Delicatessen">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/DELICATESSEN/770771528282.jpg" alt="Carpaccio Langost 120G" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%2２ x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-arrow-up-from-water-pump product-category-icon"></i>Carpaccio Langost 120G</h5>
+                            <p>Carpaccio de Langostino Bottega Di Mare 120g</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770771528282"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 8 - Carpaccio Pz A-AH 120G (categoría: Delicatessen) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Carpaccio Pz A-AH 120G" data-categoria="Delicatessen">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/DELICATESSEN/771050457790.jpg" alt="Carpaccio Pz A-AH 120G" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-arrow-up-from-water-pump product-category-icon"></i>Carpaccio Pz A-AH 120G</h5>
+                            <p>Carpaccio de Pez Aguja Ahumado King Fish 120gr</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771050457790"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Producto 9 - Carpaccio Atún AH  (categoría: Delicatessen) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Carpaccio Atún AH 120G" data-categoria="Delicatessen">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/DELICATESSEN/771312540837.jpg" alt="Carpaccio Atún AH 120G" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-arrow-up-from-water-pump product-category-icon"></i>Carpaccio Atún AH 120G</h5>
+                            <p>Carpaccio de Atún Ahumado King Fish 120gr</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771312540837"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 10 - Aceituna RS Pafia 350g (categoría: Delicatessen) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Aceituna RS Pafia 350g" data-categoria="Delicatessen">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/DELICATESSEN/771501900671.jpg" alt="Aceituna RS Pafia 350g" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-arrow-up-from-water-pump product-category-icon"></i>Aceituna RS Pafia 350g</h5>
+                            <p>Aceitunas Rellenas de Salmón Pafia 350g</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771501900671"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 11 - Salchichon Milano100G (categoría: Delicatessen) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Salchichon Milano100G" data-categoria="Delicatessen">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/DELICATESSEN/771547852097.jpg" alt="Salchichon Milano100G" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-arrow-up-from-water-pump product-category-icon"></i>Salchichon Milano100G</h5>
+                            <p>Salchichon Italguarico Milano 100g</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771547852097"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!----------------------------------------------------
+                  ----------- Categoría 27 FRUTAS_Y_VEGETALES --------
+                  ---------------------------------------------------->
+                <!------------------------------------------------------------
+                  ----------- Categoría 28 FRUTAS-VEGETALES-GRANOS_ENLATADOS -
+                  ------------------------------------------------------------>
+                <!----------------------------------------------------
+                  ----------- Categoría 29 GALLETAS-PONQUE -----------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 30 HARINAS -------------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 31 HELADOS -------------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 32 HIGIENE_BUCAL -------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 33 HUEVOS --------------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 34 INCiENSOS-VELAS -----------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 35 INFLAMABLES ---------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 36 JAMON-TOCINETA ------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 37 JAMON-TOCINETA ------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 38 LAVAPLATOS ----------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 39 LECHES-ACHOCOLATADOS-CHICA
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 40 MARGARINA-MANTEQUILLA -----
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 41 MARISCOS ------------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 42 MASAS_Y_TEQUEÑOS ----------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 43 MORTADELAS ----------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 44 PANES-CASABE --------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 45 PASTAS --------------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 46 PESCADOS -----------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 47 PLATOS --------------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 48 POLLO ---------------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 49 QUESOS-NATILLAS -----------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 50 REFRESCOS-ENERGIZANTES-HIELOS
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 51 RES -----------------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 52 SAL-CONDIMENTOS -----------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 53 SALCHICHAS-CHORIZO --------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 54 SALSAS --------------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 55 SERVILLETAS-PAPELES -------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 56 SNACKS-FRUTOS_SECOS -------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 57 UTENSILIOS_DE_LIMPIEZA ----
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 58 VASOS-PITILLOS ------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 59 YOGURT-JUGOS --------------
+                  ---------------------------------------------------->
+                <!----------------------------------------------------
+                  ----------- Categoría 60 ELECTRODOMÉSTICOS ---------
+                  ---------------------------------------------------->
+                <!-- Producto 1 - SecadorC-SA1300W ZN608 (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="SecadorC-SA1300W ZN608" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770038689966.jpg" alt="SecadorC-SA1300W ZN608" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>SecadorC-SA1300W ZN608</h5>
+                            <p>Secador de Cabello sin Aspa 1300W ZN608 ZION</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770038689966"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 2 -  GCSTBS5003-013 Oster (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="GCSTBS5003-013 Oster" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770060213506.jpg" alt="GCSTBS5003-013 Oster" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>GCSTBS5003-013 Oster</h5>
+                            <p> Plancha a Vapor GCSTBS5003-013 Oster </p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770060213506"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 3 - KUEC042B Decakila (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="KUEC042B Decakila" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770103945824.jpg" alt="" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>KUEC042B Decakila</h5>
+                            <p>Tosti Arepas KUEC042B Decakila</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770103945824"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 4 - Splitter C1-3 HO-1069 (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Splitter C1-3 HO-1069" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770140819648.jpg" alt="Splitter C1-3 HO-1069" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Splitter C1-3 HO-1069</h5>
+                            <p>Splitter Coaxial 1 Entrada 3 Salidas HO-1069 Hunter</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770140819648"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 5 - LT-C1121-PNKLotus 1.5L (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="LT-C1121-PNKLotus 1.5L" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770143714883.jpg" alt="LT-C1121-PNKLotus 1.5L" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>LT-C1121-PNKLotus 1.5L</h5>
+                            <p>Arrocera Eléctrica LT-C1121-PNK Lotus 1.5L</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770143714883"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 6 - MaquinaAfeitaBellaLiss (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="MaquinaAfeitaBellaLiss" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770147717847.jpg" alt="MaquinaAfeitaBellaLiss" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>MaquinaAfeitaBellaLiss</h5>
+                            <p>Maquina de Afeitar Bella-1788 Colores Variados BellaLiss</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770147717847"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 7 - Batidora 5VB+D MX1500W (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Batidora 5VB+D MX1500W" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770182126717.jpg" alt="Batidora 5VB+D MX1500W" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Batidora 5VB+D MX1500W</h5>
+                            <p>Batidora 5 Velocidades Blanca Black + Decker MX1500W</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770182126717"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 8 - Secador Cabello Zion (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Secador Cabello Zion" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770190646305.jpg" alt="Secador Cabello Zion" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Secador Cabello Zion</h5>
+                            <p>Secador de Cabello ZN-502 Zion</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770190646305"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 9 - Secador Cabello Zion (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Secador Cabello Zion" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770191212251.jpg" alt="Secador Cabello Zion" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Secador Cabello Zion</h5>
+                            <p>Secador de Cabello ZN-502 Zion</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770191212251"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 10 - PlanchaAVaporOster (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="PlanchaAVaporOster" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770252183014.jpg" alt="PlanchaAVaporOster" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>PlanchaAVaporOster</h5>
+                            <p>Plancha a Vapor GCSTBS5001-013 Oster</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771547852097"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 11 - AcopleCCLicuadoraOster (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="AcopleCCLicuadoraOster" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770274633736.jpg" alt="AcopleCCLicuadoraOster" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>AcopleCCLicuadoraOster</h5>
+                            <p>Acople con Cuadrante para Licuadora BLSTAC-KIT-011 Oster</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770274633736"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 12 - PicatodoExcalibur350ml (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="PicatodoExcalibur350ml" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770311009373.jpg" alt="PicatodoExcalibur350ml" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>PicatodoExcalibur350ml</h5>
+                            <p>Mini Picatodo Recargable Colores Variados Excalibur 350ml</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770311009373"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 13 - Plancha B-T Gama (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Plancha B-T Gama" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770338837297.jpg" alt="Plancha B-T Gama" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Plancha B-T Gama</h5>
+                            <p>Plancha Blue Titanio Gama</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770338837297"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 14 - Mezclador E Excalibur (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Mezclador E Excalibur" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770341079118.jpg" alt="Mezclador E Excalibur" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Mezclador E Excalibur</h5>
+                            <p>Mezclador Eléctrico a Batería Colores Variados Excalibur</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770341079118"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 15 - Tostador 2R B Guttlem (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Tostador 2R B Guttlem" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770365981277.jpg" alt="Tostador 2R B Guttlem" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Tostador 2R B Guttlem</h5>
+                            <p>Tostador 2 Rebanadas Blanco Guttlem</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770365981277"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 16 - Secador C BellaLiss (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Secador C BellaLiss" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770372581750.jpg" alt="Secador C BellaLiss" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Secador C BellaLiss</h5>
+                            <p>Secador de Cabello SuperMegaTurbo Bella-6630 BellaLiss</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770372581750"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 17 - Plancha a Vapor Lotus (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Plancha a Vapor Lotus" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770426584923.jpg" alt="Plancha a Vapor Lotus" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Plancha a Vapor Lotus</h5>
+                            <p>Plancha Con Vapor Colores Variados Lotus</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770426584923"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 18 - Cocina E 2H Roccia (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Cocina E 2H Roccia" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770430515136.jpg" alt="Cocina E 2H Roccia" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Cocina E 2H Roccia</h5>
+                            <p>Cocina Electrica 2 Hornillas TM-HD06E Roccia</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770430515136"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 19 - Balanza D-P Scale180kg (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Balanza D-P Scale180kg" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770459573363.jpg" alt="Balanza D-P Scale180kg" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Balanza D-P Scale180kg</h5>
+                            <p>Balanza Digital Ps-2003A Personal Scale 150kg/180kg</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770459573363"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 20 - Cafetera 12Ts Oster (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Cafetera 12Ts Oster" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770627219197.jpg" alt="Cafetera 12Ts Oster" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２  y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Cafetera 12Ts Oster</h5>
+                            <p>Cafetera Negra 12 Tazas BVSTDCS12B Oster</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770627219197"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 21 - SecadorCBellaLiss2000W (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="SecadorCBellaLiss2000W" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770658031472.jpg" alt="SecadorCBellaLiss2000W" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>SecadorCBellaLiss2000W</h5>
+                            <p>Secador de Cabello Colores Variados BellaLiss 2000W</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770658031472"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 22 - E Eléctrico 1L Kintech (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="E Eléctrico 1L Kintech" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770666172183.jpg" alt="E Eléctrico 1L Kintech" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>E Eléctrico 1L Kintech</h5>
+                            <p>Exprimidor de Cítricos Eléctrico 1L 40W Kintech</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770666172183"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 23 - Secador Cabello Rucha (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Secador Cabello Rucha" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770733999081.jpg" alt="Secador Cabello Rucha" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Secador Cabello Rucha</h5>
+                            <p>Secador de Cabello Academic Super Turbo 21000 Rucha 1875W</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770733999081"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 24 - Máquina Afeitar Gama (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Máquina Afeitar Gama" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770769962974.jpg" alt="Máquina Afeitar Gama" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Máquina Afeitar Gama</h5>
+                            <p>Máquina de Afeitar GC542 Gama</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770769962974"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 25 - Plancha Riza*BellaLiss (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Plancha Riza*BellaLiss" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770795078591.jpg" alt="Plancha Riza*BellaLiss" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Plancha Riza*BellaLiss</h5>
+                            <p>Plancha Rizadora Bella-6730 BellaLiss</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770795078591"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 26 - Mini V HJ-5060-6 HEJ (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Mini V HJ-5060-6 HEJ" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770843663609.jpg" alt="Mini V HJ-5060-6 HEJ" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Mini V HJ-5060-6 HEJ</h5>
+                            <p>Mini Ventilador Colores Variados HJ-5060-6 HEJ</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770843663609"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 27 - Plancha P Bellaliss (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Plancha P Bellaliss" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770874647940.jpg" alt="Plancha P Bellaliss" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Plancha P Bellaliss</h5>
+                            <p>Plancha Profesional Bella-1127 Bellaliss</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770874647940"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 28 - Plancha V PV-108Sankey (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Plancha V PV-108Sankey" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770967970455.jpg" alt="Plancha V PV-108Sankey" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Plancha V PV-108Sankey</h5>
+                            <p>Plancha a Vapor PV-108 Sankey</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770967970455"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 29 - WafleraRedondaIU-WFLR3 (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="WafleraRedondaIU-WFLR3" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/770968225356.jpg" alt="WafleraRedondaIU-WFLR3" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>WafleraRedondaIU-WFLR3</h5>
+                            <p>Waflera Redonda IU-WFLR3 Colores Variados Universal Royal 1 Und</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="770968225356"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 30 - Recortador I BellaLiss (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Recortador I BellaLiss" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771091653018.jpg" alt="Recortador I BellaLiss" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Recortador I BellaLiss</h5>
+                            <p>Recortador Inalámbrico Facial BELLA-812 BellaLiss</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771091653018"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 31 - PinzaRizadoraCKeration (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="PinzaRizadoraCKeration" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771114908706.jpg" alt="PinzaRizadoraCKeration" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>PinzaRizadoraCKeration</h5>
+                            <p>Pinza Rizadora de Cabello Keration Gama 220°C</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771114908706"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 32 - MaquinaABellaliss 11Pz (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="MaquinaABellaliss 11Pz" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771193931656.jpg" alt="MaquinaABellaliss 11Pz" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>MaquinaABellaliss 11Pz</h5>
+                            <p>Maquina de Afeitar Bella-1644A Magic Titanium Bellaliss 11 Piezas</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771193931656"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 33 - Plancha Bella C-S Gama (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Plancha Bella C-S Gama" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771154614877.jpg" alt="Plancha Bella C-S Gama" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Plancha Bella C-S Gama</h5>
+                            <p>Plancha Bella Ceramic Shine Ion Gama</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771154614877"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 34 - CepilloSM2-1 BellaLiss (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="CepilloSM2-1 BellaLiss" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771155892689.jpg" alt="CepilloSM2-1 BellaLiss" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>CepilloSM2-1 BellaLiss</h5>
+                            <p>Cepillo Secador Multifuncional 2 en 1 Color Bronce BELLA-6738 BellaLiss</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771155892689"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 35 - Sandwichera C Oster (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Sandwichera C Oster" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771163247711.jpg" alt="Sandwichera C Oster" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Sandwichera C Oster</h5>
+                            <p>Sandwichera C Oster</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771163247711"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 36 -  (categoría: electronicos) -->
+
+                <!-- Producto 37 - PlanchaGCSTBS5053Oster (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="PlanchaGCSTBS5053Oster" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771341352468.jpg" alt="PlanchaGCSTBS5053Oster" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>PlanchaGCSTBS5053Oster</h5>
+                            <p>Plancha a Vapor GCSTBS5053-013 Oster</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771341352468"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 38 - Secador C M-T-I Gama (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Secador C M-T-I Gama" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771238136390.jpg" alt="Secador C M-T-I Gama" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Secador C M-T-I Gama</h5>
+                            <p>Secador de Cabello Mistral Tuourmaline Ion Gama</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771238136390"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 39 - SandwicheraELT-* Lotus (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="SandwicheraELT-* Lotus" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771339152958.jpg" alt="SandwicheraELT-* Lotus" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>SandwicheraELT-* Lotus</h5>
+                            <p>Sandwichera Eléctrica LT-9855 Lotus</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771339152958"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 40 - ControlUAires A KT-e08 (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="ControlUAires A KT-e08" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771226995017.jpg" alt="ControlUAires A KT-e08" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>ControlUAires A KT-e08</h5>
+                            <p>Control Universal para Aires Acondicionado KT-e08</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771226995017"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 41 - AspiradoraMulti*Roccia (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="AspiradoraMulti*Roccia" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771345717712.jpg" alt="AspiradoraMulti*Roccia" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>AspiradoraMulti*Roccia</h5>
+                            <p>Aspiradora Multiusos MVC-113B Roccia</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771345717712"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 42 - Plancha Bella C Gama (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Plancha Bella C Gama" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771373159844.jpg" alt="Plancha Bella C Gama" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Plancha Bella C Gama</h5>
+                            <p>Plancha Bella Ceramic Shine Ion Gama</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771373159844"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 43 - CepilloKTTherapyGama (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="CepilloKTTherapyGama" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771407418178.jpg" alt="CepilloKTTherapyGama" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>CepilloKTTherapyGama</h5>
+                            <p>Cepillo Secador Modelador con Keratina y Tecnología 3D Therapy Gama</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771407418178"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 44 - PlanchaVUniversalRoyal (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="PlanchaVUniversalRoyal" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771440825620.jpg" alt="PlanchaVUniversalRoyal" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>PlanchaVUniversalRoyal</h5>
+                            <p>Plancha Viajera Colores Variados Universal Royal</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771440825620"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 45 - Ventilador P Eurolite (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Ventilador P Eurolite" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771533543596.jpg" alt="Ventilador P Eurolite" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Ventilador P Eurolite</h5>
+                            <p>Ventilador Portátil con Luces LED Verde Eurolite</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771533543596"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 46 - Plancha E-V Contihome (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Plancha E-V Contihome" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771572425661.jpg" alt="Plancha E-V Contihome" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Plancha E-V Contihome</h5>
+                            <p>Plancha Eléctrica a Vapor CHPLV-7DEA Contihome</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771572425661"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 47 - Batidora P 5V Sky Home (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Batidora P 5V Sky Home" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771594765719.jpg" alt="Batidora P 5V Sky Home" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Batidora P 5V Sky Home</h5>
+                            <p>Batidora de Pedestal 5 Velocidades ELEC-003 Sky Home</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771594765719"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 48 - MaquinaP7ULT9850 Lotus (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="MaquinaP7ULT9850 Lotus" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771599939792.jpg" alt="MaquinaP7ULT9850 Lotus" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>MaquinaP7ULT9850 Lotus</h5>
+                            <p>Maquina de Ponqués para 7 Und Colores Variados LT9850 Lotus</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771599939792"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 49 - Secador BB Gama 1875w (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Secador BB Gama 1875w" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771621546426.jpg" alt="Secador BB Gama 1875w" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Secador BB Gama 1875w</h5>
+                            <p>Secador Blanco Breeze Gama 1875w</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771621546426"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 50 - Plancha CN BellaLiss (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Plancha CN BellaLiss" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771634295217.jpg" alt="Plancha CN BellaLiss" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Plancha CN BellaLiss</h5>
+                            <p>Plancha Ceramixdual Negra BellaLiss</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771634295217"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 51 - Seca*SMBellaliss2000w (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Seca*SMBellaliss2000w" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771635402016.jpg" alt="Seca*SMBellaliss2000w" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Seca*SMBellaliss2000w</h5>
+                            <p>Secador SuperMegaturbo Rojo Bellaliss 2000w</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771635402016"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 52 - Balanza DA-I5kg Sankey (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Balanza DA-I5kg Sankey" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771673616454.jpg" alt="Balanza DA-I5kg Sankey" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Balanza DA-I5kg Sankey</h5>
+                            <p>Balanza Digital para Cocina de Acero Inoxidable Hasta 5kg Sankey</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771673616454"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 53 - MaquinaABellaliss 8Ps (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="MaquinaABellaliss 8Ps" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771707639419.jpg" alt="MaquinaABellaliss 8Ps" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>MaquinaABellaliss 8Ps</h5>
+                            <p>Maquina de Afeitar Bella-1767 Bellaliss 8 Piezas</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771707639419"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 54 - Limpiador F BellaLiss (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Limpiador F BellaLiss" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771712490177.jpg" alt="Limpiador F BellaLiss" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Limpiador F BellaLiss</h5>
+                            <p>Limpiador Facial BellaLiss</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771712490177"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 55 - CafeteraI-AExca* 450ml (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="CafeteraI-AExca* 450ml" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771783439239.jpg" alt="CafeteraI-AExca* 450ml" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>CafeteraI-AExca* 450ml</h5>
+                            <p>Cafetera Italiana de Aluminio Excalibur 450ml</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771783439239"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 56 - MaquinAISportGama 5Ps (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771791097091.jpg" alt="MaquinAISportGama 5Ps" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>MaquinAISportGama 5Ps</h5>
+                            <p>Maquina de Afeitar Inalámbrica GT527 Sport Gama 5 Piezas</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771791097091"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 57 - Plancha Vapor Sankey (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Plancha Vapor Sankey" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771837104112.jpg" alt="Plancha Vapor Sankey" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Plancha Vapor Sankey</h5>
+                            <p>Plancha a Vapor PV-108 Sankey</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771837104112"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 58 - MáquinaTIBellaLiss 7Ps (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="MáquinaTIBellaLiss 7Ps" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771866654936.jpg" alt="MáquinaTIBellaLiss 7Ps" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>MáquinaTIBellaLiss 7Ps</h5>
+                            <p>Máquina Trimmer Inalámbrica BELLA-1723 BellaLiss 7 Pzas</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771866654936"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 59 - PlanchaM1+CeBellaLiss (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="PlanchaM1+CeBellaLiss" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771887094318.jpg" alt="PlanchaM1+CeBellaLiss" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>PlanchaM1+CeBellaLiss</h5>
+                            <p>Plancha Magic Titanium 1 1/4 + Cepillo de Obsequio BellaLiss</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771887094318"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 60 - Sarten Eléctrico Oster (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Sarten Eléctrico Oster" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771911341964.jpg" alt="Sarten Eléctrico Oster" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=% 22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Sarten Eléctrico Oster</h5>
+                            <p>Sarten Eléctrico Oster</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771911341964"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 61 - MáquinaHairClipper 7Ps (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="MáquinaHairClipper 7Ps" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771918330378.jpg" alt="`MáquinaHairClipper 7Ps" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>MáquinaHairClipper 7Ps</h5>
+                            <p>Máquina Hair Clipper Inalámbrica Colores Variados BELLA-1934 BellaLiss 7 Pzas</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771918330378"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Producto 62 - Recortador V BellaLiss (categoría: electronicos) -->
+                <div class="col-md-6 col-lg-3 product-item" data-nombre="Recortador V BellaLiss" data-categoria="electronicos">
+                    <div class="feature-card p-3 h-100 product-card">
+                        <img src="./01-IM_Productos/ELECTRODOMESTICOS/771941313118.jpg" alt="Recortador V BellaLiss" class="product-img rounded mb-3" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22140%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22140%22/%3E%3Ctext fill=%22%23999%22 x=%2２50%２５%２２ y=%２２50%２５%２２ dominant-baseline=%２２middle%２２ text-anchor=%２＂middle%２＂ font-size=%２＂16%２＂%3ESin imagen%3C/text%3E%3C/svg%3E';">
+                        <div class="card-body-content">
+                            <h5><i class="fas fa-tv product-category-icon"></i>Recortador V BellaLiss</h5>
+                            <p>Recortador de Vellos BellaLiss</p>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom btn-descargar-center">Descargar</a>
+                        <div class="barcode-wrapper">
+                            <div class="barcode-inner">
+                                <svg class="barcode-img" data-base="771941313118"></svg>
+                                <button class="copy-btn-overlay" data-barcode="" title="Copiar código">
+                                    <i class="far fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="text-center">
+                <div class="mb-2">
+                    <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+                </div>
+                <p class="mb-0">© 2026 StockPymes — Sistema de Inventario Excel</p>
+                <p class="small opacity-75 mt-1 mb-0">Excel es marca registrada de Microsoft Corporation. Este producto es independiente.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ===== SCRIPT ORIGINAL SIN MODIFICACIONES ===== -->
+    <script>
+        (function() {
+            const toggle = document.getElementById('darkModeToggle');
+            const body = document.body;
+
+            function setTheme(theme) {
+                if (theme === 'dark') {
+                    body.classList.add('dark-theme');
+                    if (toggle) toggle.checked = true;
+                } else {
+                    body.classList.remove('dark-theme');
+                    if (toggle) toggle.checked = false;
+                }
+            }
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                setTheme('dark');
+            } else if (savedTheme === 'light') {
+                setTheme('light');
+            } else {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                setTheme(prefersDark ? 'dark' : 'light');
+            }
+
+            if (toggle) {
+                toggle.addEventListener('change', function(e) {
+                    if (this.checked) {
+                        body.classList.add('dark-theme');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        body.classList.remove('dark-theme');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            const sections = document.querySelectorAll('section');
+
+            function updateActiveNav() {
+                let current = '';
+                const scrollPos = window.scrollY + 120;
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionBottom = sectionTop + section.offsetHeight;
+                    if (scrollPos >= sectionTop && scrollPos < sectionBottom) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    const href = link.getAttribute('href');
+                    if (href === `#${current}`) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', updateActiveNav);
+            window.addEventListener('load', updateActiveNav);
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href');
+                    if (targetId === "#" || targetId === "") return;
+                    const targetEl = document.querySelector(targetId);
+                    if (targetEl) {
+                        e.preventDefault();
+                        const offset = 30;
+                        const elementPosition = targetEl.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.scrollY - offset;
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+                        history.pushState(null, null, targetId);
+                        updateActiveNav();
+                    }
+                });
+            });
+        })();
+    </script>
+
+    <!-- ===== NUEVOS SCRIPTS (generación de barcode, orden, búsqueda y filtro de categorías) ===== -->
+    <script>
+        (function() {
+            // Función para calcular dígito de control EAN13 a partir de 12 dígitos
+            function calculateEAN13CheckDigit(code12) {
+                if (!/^\d{12}$/.test(code12)) return null;
+                let sum = 0;
+                for (let i = 0; i < 12; i++) {
+                    const digit = parseInt(code12[i], 10);
+                    sum += (i % 2 === 0) ? digit * 1 : digit * 3;
+                }
+                const check = (10 - (sum % 10)) % 10;
+                return check.toString();
+            }
+
+            // Generar código de barras para cada producto
+            const barcodeSvgs = document.querySelectorAll('.barcode-img[data-base]');
+            barcodeSvgs.forEach(svg => {
+                const baseCode = svg.getAttribute('data-base');
+                if (!baseCode) return;
+
+                const checkDigit = calculateEAN13CheckDigit(baseCode);
+                if (!checkDigit) {
+                    svg.outerHTML = '<span class="text-muted small">Base inválida</span>';
+                    return;
+                }
+
+                const fullCode = baseCode + checkDigit;
+                try {
+                    JsBarcode(svg, fullCode, {
+                        format: "EAN13",
+                        width: 2.2,
+                        height: 70,
+                        displayValue: true,
+                        fontSize: 16,
+                        textMargin: 2,
+                        margin: 8,
+                        background: "transparent",
+                        lineColor: "#000000"
+                    });
+                } catch (e) {
+                    console.warn('Error generando barcode', fullCode, e);
+                    svg.outerHTML = '<span class="text-muted small">Código no válido</span>';
+                    return;
+                }
+
+                // Actualizar el botón de copiar con el código completo
+                const wrapper = svg.closest('.barcode-wrapper');
+                if (wrapper) {
+                    const copyBtn = wrapper.querySelector('.copy-btn-overlay');
+                    if (copyBtn) copyBtn.setAttribute('data-barcode', fullCode);
+                }
+            });
+
+            const container = document.getElementById('productContainer');
+            const searchInput = document.getElementById('searchInput');
+            let currentCategory = 'todas'; // categoría activa
+
+            // Ordenar productos A-Z al cargar
+            function sortProducts() {
+                if (!container) return;
+                const items = Array.from(container.querySelectorAll('.product-item'));
+                items.sort((a, b) => {
+                    const nameA = (a.getAttribute('data-nombre') || '').trim().toLowerCase();
+                    const nameB = (b.getAttribute('data-nombre') || '').trim().toLowerCase();
+                    return nameA.localeCompare(nameB, 'es');
+                });
+                items.forEach(item => container.appendChild(item));
+            }
+            sortProducts();
+
+            // Función para aplicar filtros (búsqueda + categoría)
+            function applyFilters() {
+                const filterText = searchInput ? searchInput.value.trim().toLowerCase() : '';
+                const items = container.querySelectorAll('.product-item');
+                items.forEach(item => {
+                    const nombre = (item.getAttribute('data-nombre') || '').toLowerCase();
+                    const descripcion = (item.querySelector('p')?.textContent || '').toLowerCase();
+                    const texto = nombre + ' ' + descripcion;
+                    const coincideBusqueda = texto.includes(filterText);
+                    const categoria = item.getAttribute('data-categoria') || '';
+                    const coincideCategoria = (currentCategory === 'todas' || categoria === currentCategory);
+                    item.style.display = (coincideBusqueda && coincideCategoria) ? '' : 'none';
+                });
+            }
+
+            // Buscador en tiempo real
+            if (searchInput) {
+                searchInput.addEventListener('input', applyFilters);
+            }
+
+            // Manejo de clics en botones de categoría
+            const categoryButtons = document.querySelectorAll('.category-btn');
+            categoryButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remover clase activa de todos
+                    categoryButtons.forEach(b => b.classList.remove('active'));
+                    // Activar el clickeado
+                    this.classList.add('active');
+                    // Actualizar categoría actual
+                    currentCategory = this.getAttribute('data-category');
+                    // Aplicar filtros
+                    applyFilters();
+                });
+            });
+
+            // Descargar imagen del producto
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('.btn-descargar-center');
+                if (!btn) return;
+                e.preventDefault(); // Evita que el enlace vacío recargue la página
+
+                // Buscar la imagen dentro de la misma tarjeta de producto
+                const productCard = btn.closest('.product-card');
+                if (!productCard) return;
+
+                const img = productCard.querySelector('img.product-img');
+                if (!img || !img.src) return;
+
+                // Extraer el nombre de archivo de la ruta
+                const urlParts = img.src.split('/');
+                const fileName = urlParts[urlParts.length - 1] || 'producto.jpg';
+
+                // Crear un enlace temporal y forzar la descarga
+                const link = document.createElement('a');
+                link.href = img.src;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            // Botones Copiar (evento delegado)
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('.copy-btn-overlay');
+                if (!btn) return;
+                const code = btn.getAttribute('data-barcode');
+                if (code) {
+                    navigator.clipboard.writeText(code).then(() => {
+                        const originalHTML = btn.innerHTML;
+                        btn.innerHTML = '<i class="fas fa-check"></i> Copiado';
+                        btn.classList.add('btn-success');
+                        setTimeout(() => {
+                            btn.innerHTML = originalHTML;
+                            btn.classList.remove('btn-success');
+                        }, 1500);
+                    }).catch(() => {
+                        alert('No se pudo copiar. Código: ' + code);
+                    });
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
+```
