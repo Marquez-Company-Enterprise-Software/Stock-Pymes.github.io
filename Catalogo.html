@@ -4979,29 +4979,38 @@
     <script>
         (function() {
             // Función que devuelve un código EAN13 válido de 13 dígitos
-            function getEAN13Code(input) {
-            // Elimina cualquier carácter no numérico (por si acaso)
-            const digits = input.replace(/\D/g, '');
+            function getBarcodeInfo(input) {
+                const digits = input.replace(/\D/g, ''); // solo números
 
-            // Necesitamos al menos 12 dígitos para formar un EAN-13
-            if (digits.length < 12) {
+                // --- EAN-13 (12 o 13 dígitos) ---
+                if (digits.length >= 12 && digits.length <= 13) {
+                    const base = digits.substring(0, 12);
+                    let sum = 0;
+                    for (let i = 0; i < 12; i++) {
+                        const d = parseInt(base[i], 10);
+                        // en EAN-13: índice par = peso 1, impar = peso 3
+                        sum += (i % 2 === 0) ? d * 1 : d * 3;
+                    }
+                    const check = (10 - (sum % 10)) % 10;
+                    return { code: base + check.toString(), format: "EAN13" };
+                }
+
+                // --- EAN-8 (7 u 8 dígitos) ---
+                if (digits.length >= 7 && digits.length <= 8) {
+                    const base = digits.substring(0, 7);
+                    let sum = 0;
+                    for (let i = 0; i < 7; i++) {
+                        const d = parseInt(base[i], 10);
+                        // en EAN-8: la posición 1,3,5,7 usa peso 3; las demás peso 1
+                        // el índice del array empieza en 0: i=0 → pos 1 (peso 3), i=1 → pos 2 (peso 1)...
+                        sum += (i % 2 === 0) ? d * 3 : d * 1;
+                    }
+                    const check = (10 - (sum % 10)) % 10;
+                    return { code: base + check.toString(), format: "EAN8" };
+                }
+                // Cualquier otra longitud se considera inválida
                 return null;
             }
-
-            // Tomamos siempre los primeros 12 dígitos y calculamos el dígito de control
-            const base = digits.substring(0, 12);
-            let sum = 0;
-            for (let i = 0; i < 12; i++) {
-                const digit = parseInt(base[i], 10);
-                // En EAN-13: posiciones impares (1,3,5,...) se multiplican por 1,
-                // posiciones pares (2,4,6,...) por 3.
-                // Como el índice del array empieza en 0, i%2==0 → posición 1,3,5…
-                sum += (i % 2 === 0) ? digit * 1 : digit * 3;
-            }
-            const checkDigit = (10 - (sum % 10)) % 10;
-
-            return base + checkDigit.toString();
-        }
 
             // Generar código de barras para cada producto
             const barcodeSvgs = document.querySelectorAll('.barcode-img[data-base]');
@@ -5009,7 +5018,7 @@
                 const baseCode = svg.getAttribute('data-base');
                 if (!baseCode) return;
 
-                const fullCode = getEAN13Code(baseCode);
+                const fullCode = getBarcodeInfo(baseCode)?.code;
                 if (!fullCode) {
                     svg.outerHTML = '<span class="text-muted small">Código no válido</span>';
                     return;
@@ -5017,7 +5026,7 @@
 
                 try {
                     JsBarcode(svg, fullCode, {
-                        format: "EAN13",
+                        format: getBarcodeInfo(baseCode)?.format || "EAN13",
                         width: 2.2,
                         height: 70,
                         displayValue: true,
