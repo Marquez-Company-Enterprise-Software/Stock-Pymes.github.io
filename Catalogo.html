@@ -8530,11 +8530,11 @@
                         </div>
                     </div>
                 </div>
-
-                <div id="scroll-sentinel" class="text-center py-3" style="display: none;">
+            </div>
+            
+            <div id="scroll-sentinel" class="text-center py-3" style="display: none;">
                     <div class="spinner-border text-success" role="status"></div>
                     <p class="mt-2">Cargando productos…</p>
-                </div>
             </div>
         </div>
     </section>
@@ -8839,87 +8839,132 @@
     </script>
 
     <script>
-        // Variables de paginación
-        const BATCH_SIZE = 32;
-        let filteredProducts = [];      // productos que cumplen el filtro actual
-        let currentBatch = 1;           // cuántos lotes ya mostrados
-        let isLoading = false;
-        let sentinelObserver = null;
+        (function() {
+            // --- Referencias ---
+            const container = document.getElementById('productContainer');
+            const searchInput = document.getElementById('searchInput');
+            const sentinel = document.getElementById('scroll-sentinel');
 
-        // Función que renderiza los primeros (currentBatch * BATCH_SIZE) productos
-        function renderBatch() {
-            const limit = currentBatch * BATCH_SIZE;
-            // Ocultar todos
-            allProducts.forEach(p => p.style.display = 'none');
-            // Mostrar solo los primeros 'limit' de filteredProducts
-            for (let i = 0; i < limit && i < filteredProducts.length; i++) {
-                filteredProducts[i].style.display = '';
+            // Todos los productos (elementos .product-item) dentro del container
+            const allProducts = Array.from(container.querySelectorAll('.product-item'));
+
+            // Estado de paginación y filtros
+            const BATCH_SIZE = 30;
+            let filteredProducts = [];    // productos que coinciden con el filtro actual
+            let currentBatch = 1;         // cuántos lotes ya mostrados (1 = primeros 30)
+            let isLoading = false;
+            let sentinelObserver = null;
+
+            // --- Función para obtener productos filtrados según búsqueda y categoría ---
+            function getFiltered() {
+                const filterText = searchInput ? searchInput.value.trim().toLowerCase() : '';
+                const currentCategory = document.querySelector('.category-btn.active')?.getAttribute('data-category') || 'todas';
+
+                return allProducts.filter(item => {
+                    const nombre = (item.getAttribute('data-nombre') || '').toLowerCase();
+                    const descripcion = (item.querySelector('p')?.textContent || '').toLowerCase();
+                    const texto = nombre + ' ' + descripcion;
+                    const coincideBusqueda = texto.includes(filterText);
+                    const categoria = item.getAttribute('data-categoria') || '';
+                    const coincideCategoria = (currentCategory === 'todas' || categoria === currentCategory);
+                    return coincideBusqueda && coincideCategoria;
+                });
             }
-        }
 
-        // Cargar más productos (siguiente lote)
-        function loadMore() {
-            if (isLoading) return;
-            const totalFiltered = filteredProducts.length;
-            const currentlyShown = currentBatch * BATCH_SIZE;
-            if (currentlyShown >= totalFiltered) return; // no hay más
+            // --- Renderiza los primeros (currentBatch * BATCH_SIZE) productos filtrados ---
+            function renderBatch() {
+                // Oculta todos los productos
+                allProducts.forEach(p => p.style.display = 'none');
 
-            isLoading = true;
-            const sentinel = document.getElementById('scroll-sentinel');
-            if (sentinel) sentinel.style.display = 'flex';
+                const limit = Math.min(currentBatch * BATCH_SIZE, filteredProducts.length);
+                for (let i = 0; i < limit; i++) {
+                    filteredProducts[i].style.display = '';
+                }
 
-            // Simular carga (para que se vea el mensaje)
-            setTimeout(() => {
-                currentBatch++;
+                // Mostrar/ocultar el centinela según si hay más productos por cargar
+                if (sentinel) {
+                    if (filteredProducts.length > currentBatch * BATCH_SIZE) {
+                        sentinel.style.display = 'flex';
+                    } else {
+                        sentinel.style.display = 'none';
+                    }
+                }
+            }
+
+            // --- Carga el siguiente lote (se llama desde el Intersection Observer) ---
+            function loadMore() {
+                if (isLoading) return;
+                const total = filteredProducts.length;
+                const shown = currentBatch * BATCH_SIZE;
+                if (shown >= total) {
+                    if (sentinel) sentinel.style.display = 'none';
+                    return;
+                }
+
+                isLoading = true;
+                if (sentinel) sentinel.style.display = 'flex';
+
+                // Simular un pequeño retraso para que se vea el spinner (opcional)
+                setTimeout(() => {
+                    currentBatch++;
+                    renderBatch();
+                    isLoading = false;
+                    // Si ya no hay más, ocultamos el centinela
+                    if (filteredProducts.length <= currentBatch * BATCH_SIZE) {
+                        if (sentinel) sentinel.style.display = 'none';
+                    } else {
+                        if (sentinel) sentinel.style.display = 'flex';
+                    }
+                }, 300);
+            }
+
+            // --- Configurar el Intersection Observer en el centinela ---
+            function setupSentinel() {
+                if (sentinelObserver) sentinelObserver.disconnect();
+                if (!sentinel) return;
+                sentinelObserver = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting && !isLoading) {
+                        loadMore();
+                    }
+                }, { rootMargin: '0px 0px 100px 0px' }); // activa un poco antes de llegar al final
+                sentinelObserver.observe(sentinel);
+            }
+
+            // --- Reinicia la paginación y renderiza desde el lote 1 ---
+            function resetPaginationAndRender() {
+                filteredProducts = getFiltered();
+                currentBatch = 1;
                 renderBatch();
-                isLoading = false;
-                if (sentinel && currentlyShown + BATCH_SIZE >= totalFiltered) {
-                    sentinel.style.display = 'none';
-                } else if (sentinel) {
-                    sentinel.style.display = 'flex';
-                }
-            }, 300);
-        }
+                setupSentinel();
+            }
 
-        // Configurar Intersection Observer en el centinela
-        function setupSentinel() {
-            if (sentinelObserver) sentinelObserver.disconnect();
-            const sentinel = document.getElementById('scroll-sentinel');
-            if (!sentinel) return;
-            sentinelObserver = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && !isLoading) {
-                    loadMore();
-                }
+            // --- Eventos de búsqueda y categorías ---
+            if (searchInput) {
+                searchInput.addEventListener('input', resetPaginationAndRender);
+            }
+
+            // Clic en botones de categoría
+            const categoryButtons = document.querySelectorAll('.category-btn');
+            categoryButtons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    categoryButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    resetPaginationAndRender();
+                });
             });
-            sentinelObserver.observe(sentinel);
-        }
 
-        // Reiniciar paginación al aplicar filtros
-        function resetPaginationAndRender() {
-            currentBatch = 1;
-            renderBatch();
-            setupSentinel();
-        }
-
-        // Modificar applyFilters para que calcule filteredProducts
-        function applyFilters() {
-            const filterText = searchInput ? searchInput.value.trim().toLowerCase() : '';
-            const items = allProducts;
-            const newFiltered = [];
-            items.forEach(item => {
-                const nombre = (item.getAttribute('data-nombre') || '').toLowerCase();
-                const descripcion = (item.querySelector('p')?.textContent || '').toLowerCase();
-                const texto = nombre + ' ' + descripcion;
-                const coincideBusqueda = texto.includes(filterText);
-                const categoria = item.getAttribute('data-categoria') || '';
-                const coincideCategoria = (currentCategory === 'todas' || categoria === currentCategory);
-                if (coincideBusqueda && coincideCategoria) {
-                    newFiltered.push(item);
-                }
-            });
-            filteredProducts = newFiltered;
+            // --- Inicializar ---
+            // Asegurar que todos los productos estén ocultos al inicio
+            allProducts.forEach(p => p.style.display = 'none');
+            // Aplicar filtro inicial (categoría 'todas' por defecto) y mostrar primeros 30
             resetPaginationAndRender();
-        }
+
+            // --- Mantener la funcionalidad de descarga de imágenes y copia de código ---
+            // (Ya están definidas en el script anterior, no es necesario duplicarlas)
+            // Pero si quieres asegurar que funcionen, puedes dejarlas como estaban.
+
+            // Nota: El código de generación de barcodes ya se ejecutó antes, no lo tocamos.
+        })();
     </script>
 </body>
 </html>
